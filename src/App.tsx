@@ -26,31 +26,6 @@ interface Subscription {
     filters: Filter[],
 }
 
-// const parse_duration = (dur_string: string) => {
-//     let t_ind = dur_string.search("[T,t]ime:")
-//     if (t_ind !== -1) {
-//         let t_string = dur_string.substring(t_ind + 5,)
-//         let h_ind = t_string.search("h")
-//         let m_ind = t_string.search("m")
-//         let h = Number(t_string.substring(0, h_ind))
-//         let m = Number(t_string.substring(h_ind + 1, m_ind))
-//         let ret: number = 0
-//         if (!isNaN(h) && h > 0) {
-//             ret += 3600 * h
-//         }
-//         if (!isNaN(m) && m > 0) {
-//             ret += 60 * m
-//         }
-//         return ret
-//     } else {
-//         return 0
-//     }
-// }
-
-// const sleep = () => {
-//     return new Promise(resolve => setTimeout(resolve, 3000));
-// };
-
 const generate_reply_tags = (e: Event, pk: string, url: string) => {
     let reply_tags: string[][] = []
     if (e.pubkey !== pk) {
@@ -198,51 +173,11 @@ const Tags: React.FC<{ reply_tags: string[][], set_reply_tags: React.Dispatch<Re
     )
 }
 
-
 const sort_Events = (evs: Event[]) => {
     let evs_copy = [...evs]
     evs_copy.sort((a: Event, b: Event) => b.created_at - a.created_at)
     return evs_copy
 }
-
-// const RenderSub: React.FC<{ sub: Subscription, friendlist: Event, set_reply_tags: React.Dispatch<React.SetStateAction<string[][]>> }> = ({
-//     sub,
-//     friendlist,
-//     set_reply_tags,
-// }) => {
-//     const pushOnClick = useCallback((tag: string[]) => {
-//         return (e: React.MouseEvent) => {
-//             e.preventDefault()
-//             set_reply_tags((reply_tags) => {
-//                 let b: boolean = false
-//                 for (let i in reply_tags) {
-//                     if (reply_tags[i][1] === tag[1]) {
-//                         b = true
-//                         break
-//                     }
-//                 }
-//                 return b ? reply_tags : [...reply_tags, tag]
-//             })
-//         }
-//     }, [])
-
-//     return (sub.underlying !== undefined ? <div className="sub">
-//         {sub.filters.map((f, i) => {
-//             let ptags = f[`#p`] !== undefined && <>{(f[`#p`] as string[]).map((s, j) => <Tag key={j} tag={["p", s]} onContextMenu={() => {}} friendlist={friendlist} onClick={pushOnClick(["p", s])} />)}</>
-//             let etags = f[`#e`] !== undefined && <>{(f[`#e`] as string[]).map((s, j) => <Tag key={j} tag={["e", s]} onContextMenu={() => {}} friendlist={friendlist} onClick={pushOnClick(["e", s])} />)}</>
-//             let mentions = (f[`#p`] !== undefined || f[`#e`] !== undefined) && <div><span className="gray">Mentions:</span> {ptags} {etags}</div>
-//             let authors = f.authors !== undefined && <div><span className="gray">Authors:</span> {(f.authors as string[]).map((s, j) => <Tag key={j} tag={["p", s]} onContextMenu={() => {}} friendlist={friendlist} onClick={(e: React.MouseEvent) => e.preventDefault()} />)}</div>
-//             let since = (f.since !== undefined) && <div><span className="timestamp">Since: {(new Date((f.since as number) * 1000)).toLocaleTimeString('en-US', { "hourCycle": "h23", "weekday": "short", "month": "short", "day": "2-digit" })}</span></div>
-//             return <React.Fragment key={i} >
-//                 {mentions}
-//                 {authors}
-//                 {since}
-//             </React.Fragment>
-//         }
-//         )
-//         }
-//     </div > : <></>)
-// }
 
 interface SubInfo {
     type: string,
@@ -250,12 +185,12 @@ interface SubInfo {
     since: number,
     active?: boolean
 }
+
 const SubBox: React.FC<{ subs: Subscription[], fetcher: (update: SubInfo[], old_info: SubInfo[], cb: () => void) => void, friendlist: Event, set_reply_tags: React.Dispatch<React.SetStateAction<string[][]>>, reply_tags: string[][] }> = ({
     subs,
     fetcher,
     friendlist,
     reply_tags,
-    set_reply_tags,
 }) => {
     const [hidden, set_hidden] = useState(true)
     const [update, set_update] = useState([] as SubInfo[])
@@ -848,14 +783,7 @@ function App() {
 
     const [pk, set_pk] = useState('' as string)
     const [hidden,] = useState(false)
-    // const url = "wss://nostr-pub.wellorder.net"
-    // const url = "wss://nostr.zebedee.cloud"
     const [url,] = useState("wss://nos.lol")
-    // const url = "wss://nostr.v0l.io"
-    // const url = "wss://nostr.fmt.wiz.biz"
-    // const url = "wss://nostr.orangepill.dev"
-    // const [url,] = useState("wss://eden.nostr.land")
-    // const url = "wss://nostr.drss.io"
     const r = useRef({ status: WebSocket.CLOSED } as Relay)
     const [connected, set_connected] = useState(false)
     const [subs, set_subs] = useState([] as Subscription[])
@@ -866,13 +794,6 @@ function App() {
 
             let stored_friendlist = localStorage.getItem(p)
             if (stored_friendlist !== null) {
-                // let ev: Event = {
-                //     pubkey: p,
-                //     kind: 3 as Kind,
-                //     content: "",
-                //     tags: [] as string[][],
-                //     created_at: 0
-                // }
                 let ev: Event = JSON.parse(stored_friendlist as string)
                 set_friendlist(() => ev)
             }
@@ -1122,7 +1043,6 @@ function App() {
             cb()
         }
     }, [subs])
-
 
     return (
         <div className="App">
