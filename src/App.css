@@ -1,0 +1,250 @@
+@font-face{
+    font-family: "basicpixel";
+    src: url('./assets/depixelschmal.woff2') format('woff2');
+}
+#root {    
+    font-family: "basicpixel";
+    max-width: 700px;
+    margin: 0 auto 0 auto;
+    text-align: left;
+}
+#root code {
+    font-family: inherit;
+}
+.card button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  margin: 1em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+#notelist {
+    display:flex;    
+    flex-direction: column;
+    margin: 15px auto 700px auto;
+}
+.loginBox {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 10px;
+    border: 1px solid #888888;
+    margin: 15px auto 15px auto;
+}
+.post, .sub, .friendbox {   
+    padding: 10px;
+    border: 1px solid #888888;
+    margin: 0px 0px 15px 0px;
+}
+.sub, .friendbox, .loginBox {
+    background-color: #141414;
+}
+.sub > div {
+    display:flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.sub > div > span:first-child {
+    color: #888888;
+    width: 50px;
+}
+.sub > div:nth-child(n+2) > a:nth-child(2) {
+    width: 200px;
+}
+.sub > div:nth-child(n+2) > span:nth-child(3) {
+    width: 280px;
+    text-align: right;
+}
+.textcontent {
+    white-space: pre-line;
+}
+.subject {
+    color: #888888;
+    display: block;
+}
+.nostrfeed {
+    text-align: center;
+    margin: 10px 0 15px 0;
+    user-select: none;
+    cursor: pointer;
+}
+.nostrfeed span{
+    line-height: 1.1;
+    font-size: 2.2em;
+}
+.topsig a, .reply, .timestamp, .hide, .gray, .friendbox .consideration a {
+    color: #888888;
+}
+.magictimestamp {
+    user-select: none;
+    color: #888888;
+}
+.magictimestamp:hover {
+    color: #88ff88;
+    cursor: pointer;
+}
+.reply, .hide {
+    cursor: pointer;
+}
+.hide:hover, .nostrfeed.hidden {
+    color: #ff5555;
+}
+.author {
+    width: 154px;
+}
+.me .topsig .author, .yellow {
+    color: #ffff55;
+}
+.other .topsig .author, .red {
+    color: #ff5555;
+}
+.me .topsig .author:hover, .yellow:hover {
+    color: #cccc55;
+    cursor:pointer;
+}
+.other .topsig .author:hover, .red:hover {
+    color: #cc5555;
+    cursor:pointer;
+}
+.maintextarea > div {
+    min-height: 60px;
+    position:relative;
+}
+.maintextarea #publish_button {
+    user-select: none;
+    position: absolute;
+    padding: 2px 10px;
+    bottom: 15px;
+    right: 10px;
+    background: #343434;
+}
+.maintextarea #hide_button {
+    user-select: none;
+    position: absolute;
+    padding: 2px 10px;
+    top: 15px;
+    right: 10px;
+    background: #343434;
+}
+.maintextarea #hide_button:hover {
+    background: #646434;
+    cursor:pointer;
+}
+.maintextarea #publish_button:hover {
+    background: #646434;
+    cursor:pointer;
+}
+.maintextarea {
+    background: #111111;
+}
+.maintextarea > div:nth-child(2) {
+    display: flex;
+    flex-wrap:wrap;
+    justify-content: flex-start;
+    min-height: 35px;
+    padding: 0px 10px 5px 10px;
+}
+.maintextarea > div:nth-child(2) > * {
+    margin: 0px 10px 0px 0px;
+}
+.maintextarea textarea {
+    font-family: inherit;
+    /* color: #00ff00; */
+    font-size: 1.3em;
+    padding: 10px;
+    border: none;
+    width: 570px;
+    height: 7em;
+    resize: none;    
+}
+.maintextarea textarea:focus {
+    outline: none;
+}
+.friendlist {
+    display:flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+.topsig {
+    display:flex;
+    justify-content: space-between;
+}
+.frienditem input, .loginBox input {
+    text-align:left;
+    font-family: "basicpixel";
+    font-size:inherit;    
+    padding:none;
+    background: inherit;
+    border:none;
+}
+.frienditem input {
+    max-width: 150px;
+}
+.friendbox .consideration {
+    margin: 10px 0 0 0;
+    padding: 8px 0 0 0;
+    border-top: 2px solid #444444;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content: space-around;
+}
+
+.friendbox .consideration a:hover{
+    color: #9c9cff;;
+}
+.frienditem > a {
+    display:block;
+    width: 184px;
+}
+.frienditem {
+    display:flex;
+    justify-content: flex-start;
+}
+.friendlist input:focus {
+    outline: none;
+}
+.card {
+    padding: 2em;
+}
+.fetchBox {
+    text-align:left;
+    display:flex;
+    flex-direction:column;
+    position: fixed;
+    bottom: 250px;
+    left: calc(50% + 370px);
+}
+.fetchBox .tagColumn {
+    display:flex;
+    flex-direction:column;
+    margin: auto;
+}
+.fetchBox .buttonRow {
+    display:flex;
+    flex-direction: row;
+}
+
+.buttonRow button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.5em 0.6em;
+  margin: 0.5em;
+  font-size: 1em;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+button:hover {
+  border-color: #646cff;
+}
+button:focus, button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
