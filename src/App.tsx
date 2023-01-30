@@ -7,6 +7,7 @@ import {
     Filter,
     Relay,
     Sub,
+    Kind,
 } from 'nostr-tools'
 
 declare global {
@@ -291,14 +292,14 @@ const SubBox: React.FC<{ subs: Subscription[], fetcher: (update: SubInfo[], old_
             </div> : <></>
         })
     }, [reply_tags, subs, friendlist, update])
-    return (friendlist.id !== undefined ? <div className="sub">
+    return (<div className="sub">
         <div>
             <a className="hide" onClick={() => set_hidden((hidden) => !hidden)}> Subscriptions</a>
             {update.length > 0 && <a className="magictimestamp" onClick={() => fetcher(update, subinfos, () => { set_update(() => []) })}>submit</a>}
         </div>
         {!hidden ? consider_body : <></>}
         {!hidden ? mainbody : <></>}
-    </div> : <></>)
+    </div>)
 }
 
 const MagicTimestamp: React.FC<{ info: SubInfo, setter: React.Dispatch<React.SetStateAction<SubInfo[]>>, step: number, since: number }> = ({
@@ -795,6 +796,15 @@ function App() {
             let stored_friendlist = localStorage.getItem(p)
             if (stored_friendlist !== null) {
                 let ev: Event = JSON.parse(stored_friendlist as string)
+                set_friendlist(() => ev)
+            } else {
+                let ev: Event = {
+                    pubkey: p,
+                    kind: 3 as Kind,
+                    content: "",
+                    tags: [] as string[][],
+                    created_at: 0
+                }
                 set_friendlist(() => ev)
             }
         }
