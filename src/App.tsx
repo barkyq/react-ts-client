@@ -127,6 +127,7 @@ const Tag: React.FC<{ tag: string[], onClick: React.MouseEventHandler, onContext
     }
 }
 
+
 const Tags: React.FC<{ reply_tags: string[][], set_reply_tags: React.Dispatch<React.SetStateAction<string[][]>>, friendlist: Event }> = ({
     reply_tags,
     set_reply_tags,
@@ -147,28 +148,13 @@ const Tags: React.FC<{ reply_tags: string[][], set_reply_tags: React.Dispatch<Re
             })
         }
     }, [])
-    const focusOnClick = useCallback((key: number) => {
-        return (e: React.MouseEvent) => {
-            e.preventDefault()
-            // use the updater!
-            set_reply_tags((old_reply_tags) => {
-                var new_tags: string[][] = []
-                for (let i in old_reply_tags) {
-                    if (Number(i) == key) {
-                        new_tags.push(old_reply_tags[i])
-                    }
-                }
-                return new_tags
-            })
-        }
-    }, [])
     if (reply_tags.length === 0) {
         return <></>
     }
     return (
         <>
             {reply_tags.map(
-                (tag: string[], i: number) => <Tag key={i} tag={tag} friendlist={friendlist} onContextMenu={focusOnClick(i)} onClick={removeOnClick(i)} />
+                (tag: string[], i: number) => <Tag key={i} tag={tag} friendlist={friendlist} onContextMenu={(e) => { e.preventDefault(); set_reply_tags(() => [tag]) }} onClick={removeOnClick(i)} />
             )}
         </>
     )
@@ -192,8 +178,9 @@ const SubBox: React.FC<{ subs: Subscription[], fetcher: (update: SubInfo[], old_
     fetcher,
     friendlist,
     reply_tags,
+    set_reply_tags
 }) => {
-    const [hidden, set_hidden] = useState(true)
+    const [hidden, set_hidden] = useState(false)
     const [update, set_update] = useState([] as SubInfo[])
     const subinfos = useMemo(() => {
         let subinfos = [] as SubInfo[]
@@ -255,7 +242,16 @@ const SubBox: React.FC<{ subs: Subscription[], fetcher: (update: SubInfo[], old_
             }
             return info.active !== undefined ? <div key={i}>
                 <span>{info.type}</span>
-                <Tag tag={info.tag} onClick={(e) => e.preventDefault()} onContextMenu={() => {}} friendlist={friendlist} />
+                <Tag tag={info.tag} onClick={(e) => {
+                    e.preventDefault(); set_reply_tags((current_tags) => {
+                        for (let j in current_tags) {
+                            if (current_tags[j][1] == info.tag[1] && current_tags[j][0] == info.tag[0]) {
+                                return current_tags
+                            }
+                        }
+                        return [...current_tags, info.tag]
+                    })
+                }} onContextMenu={(e) => { e.preventDefault(); set_reply_tags(() => [info.tag]) }} friendlist={friendlist} />
                 <MagicTimestamp key={info.tag[0] + info.tag[1]} info={info} setter={set_update} step={3600} since={since} />
             </div> : <></>
         })
@@ -530,7 +526,7 @@ const FriendBox: React.FC<{ friendlist: Event, set_friendlist: React.Dispatch<Re
                     friendlist.tags.map(
                         (tag, i) => <div
                             className="frienditem" key={i}>
-                            <a href={"https://www.nostr.guru/p/" + tag[1]}
+                            <a href={"https://www.nostr.guru/" + nip19.npubEncode(tag[1])}
                                 draggable={true}
                                 onDragStart={(e) => { e.dataTransfer.setData("pub", tag[1]); set_deletebox(() => true) }}
                                 onDragEnd={() => set_deletebox(() => false)}
@@ -617,10 +613,18 @@ const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags: React.
                 }
                 switch (ev.tags[j][0]) {
                     case "p":
-                        elements.push(<Tag key={j} tag={ev.tags[j]} onContextMenu={() => {}} friendlist={friendlist} onClick={pushOnClick(ev.tags[j])} />)
+                        elements.push(<Tag key={j}
+                            tag={ev.tags[j]}
+                            onContextMenu={(e) => { e.preventDefault(); set_reply_tags(() => [ev.tags[j]]) }}
+                            friendlist={friendlist}
+                            onClick={pushOnClick(ev.tags[j])} />)
                         break
                     case "e":
-                        elements.push(<Tag key={j} tag={ev.tags[j]} onContextMenu={() => {}} friendlist={friendlist} onClick={pushOnClick(["e", ev.tags[j][1], relay_string, "mention"])} />)
+                        elements.push(<Tag key={j}
+                            tag={ev.tags[j]}
+                            onContextMenu={(e) => { e.preventDefault(); set_reply_tags(() => [["e", ev.tags[j][1], relay_string, "mention"]]) }}
+                            friendlist={friendlist}
+                            onClick={pushOnClick(["e", ev.tags[j][1], relay_string, "mention"])} />)
                         break
                     default:
                         break
@@ -704,9 +708,9 @@ const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags: React.
         var timeString = dateObj.toLocaleTimeString('en-US', { "hourCycle": "h23", "weekday": "short", "month": "short", "day": "2-digit" });
         let npub = nip19.npubEncode(ev.pubkey)
         let topsig = <div className="topsig">
-            <a className="author" href={"nostr:" + npub} onClick={pushOnClick(["p", ev.pubkey])}> {author_name.padEnd(12, " ").substring(0, 12)}</ a >
+            <a className="author" href={"nostr:" + npub} onClick={pushOnClick(["p", ev.pubkey])} onContextMenu={(e) => { e.preventDefault(); set_reply_tags(() => [["p", ev.pubkey]]) }}> {author_name.padEnd(12, " ").substring(0, 12)}</ a >
             <span className="timestamp">{timeString}</span>
-            <a className="noteId" href={"nostr:" + note} onClick={pushOnClick(["e", ev.id as string, relay_url, "mention"])}> {note.substring(0, 12)}</ a >
+            <a className="noteId" href={"nostr:" + note} onClick={pushOnClick(["e", ev.id as string, relay_url, "mention"])} onContextMenu={(e) => { e.preventDefault(); set_reply_tags(() => [["e", ev.id as string, relay_url, "mention"]]) }}> {note.substring(0, 12)}</ a >
             <a className="reply" onClick={replyTagsOnClick}>reply</a>
             <a className="hide" onClick={hideOnClick}>hide</a>
         </div >
