@@ -783,8 +783,7 @@ function App() {
     const [disps, set_disps] = useState<Event[]>([])
 
     const [pk, set_pk] = useState('' as string)
-    const [hidden,] = useState(false)
-    const [url,] = useState("wss://nos.lol")
+    const [url, set_url] = useState('' as string)
     const r = useRef({ status: WebSocket.CLOSED } as Relay)
     const [connected, set_connected] = useState(false)
     const [subs, set_subs] = useState([] as Subscription[])
@@ -792,6 +791,8 @@ function App() {
     const pubkeyConnect = useCallback(() => {
         const pk_cb = (p: string) => {
             set_pk(() => p)
+            let stored_url = localStorage.getItem(p + "url")
+            stored_url !== null && set_url(() => stored_url as string)
 
             let stored_friendlist = localStorage.getItem(p)
             if (stored_friendlist !== null) {
@@ -862,13 +863,12 @@ function App() {
         const connect_cb = () => {
             console.log("connect")
             set_connected(() => true)
-
+            localStorage.setItem(pk + "url", url)
             subscribe(pk)
         }
         const error_cb = () => {
             console.log("error")
             set_connected(() => false)
-
         }
         const disconnect_cb = () => {
             console.log("disconnected")
@@ -1056,11 +1056,11 @@ function App() {
 
     return (
         <div className="App">
-            <div className={"nostrfeed" + (hidden ? " hidden" : "")}><span onClick={() => {}}>gnostr</span></div>
+            <div className={"nostrfeed"}><span>gnostr</span></div>
             <div className="loginBox">
                 {pk === "" && <a onClick={pubkeyConnect}>{"Connect to browser extension"}</a>}
                 {pk !== "" && <>
-                    <div>{connected ? <span className="gray">Connected to: {url}</span> : <><a onClick={relayConnect}>Connect to:</a> <input defaultValue={url}></input></>} </div>
+                    <div>{connected ? <span className="hide" onClick={() => { r.current.close() }}>Connected to: {url}</span> : <form onSubmit={(e) => { e.preventDefault(); relayConnect() }}><button className="connect_button" type="submit">{"Connect to:"}</button><input value={url} autoFocus={false} onChange={(e) => set_url(() => e.target.value)}></input></form>} </div>
                     <div><span className="gray">Logged in as:</span> <Tag tag={["p", pk]} friendlist={friendlist} onClick={(e) => e.preventDefault()} onContextMenu={(e) => e.preventDefault()} /></div>
                 </>}
             </div>
@@ -1071,7 +1071,7 @@ function App() {
             </>
             }
             <div id="notelist">
-                {(eose && !hidden) &&
+                {(eose) &&
                     <>
                         {disps.map(
                             (e: Event) => <Post key={e.id} ev={e} reply_tags={reply_tags} set_reply_tags={set_reply_tags} set_disps={set_disps} relay_url={url} pk={pk} friendlist={friendlist} fetcher={fetch_e_tags} />)
