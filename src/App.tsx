@@ -892,7 +892,16 @@ function App() {
         return (e: Event) => {
             if (r.current.status == WebSocket.OPEN) {
                 let p = r.current.publish(e)
-                p.on('ok', cb)
+                p.on('ok', () => {
+                    for (let j in ids_exist_ref.current) {
+                        if (ids_exist_ref.current[j] === e.id) {
+                            return cb()
+                        }
+                    }
+                    ids_exist_ref.current.push(e.id as string)
+                    set_disps((disps) => [e, ...disps]);
+                    cb()
+                })
                 p.on('failed', () => {})
             }
         }
