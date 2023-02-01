@@ -634,7 +634,7 @@ const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags: React.
         return (<div className="tags"> {elements.map((t) => t)}</div>)
     }, [])
     const bodyJSX = useMemo(() => {
-        let content = ev.content.replaceAll(/lnbc[0-9,a-z]*/g, "*lightning-invoice*")
+        let content = ev.content.replaceAll(/lnbc[0-9,a-z]*/ig, "*lightning-invoice*")
         let pieces: JSX.Element[] = []
         let note = nip19.noteEncode(ev.id as string)
         for (let j in ev.tags) {
