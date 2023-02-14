@@ -934,23 +934,28 @@ function App() {
     const publish = useCallback((content: string, reply_tags: string[][], cb: () => void) => {
         let textcontent: string
         let tags: string[][] = []
-        let has_subject: boolean = false
+        let subject_tag: string[] = []
         for (let i in reply_tags) {
             //only one subject
-            if ((reply_tags[i][0] === "subject") && !has_subject) {
-                has_subject = true
-                continue
+            if ((reply_tags[i][0] === "subject") && subject_tag.length == 0) {
+                subject_tag = reply_tags[i]
+            } else {
+                tags.push(reply_tags[i])
             }
         }
-        tags = [...reply_tags]
-        if ((content.search("^[S,s]ubject:") === -1) || has_subject) {
+        if ((content.search("^[S,s]ubject:") === -1)) {
             textcontent = content
         } else {
             let end_subject = content.search("\n")
             textcontent = content.substring(end_subject + 1,)
             let begin_subject = content.search(":")
-            tags.push(["subject", content.substring(begin_subject + 1, end_subject).trim()])
+            subject_tag = ["subject", content.substring(begin_subject + 1, end_subject).trim()]
         }
+        if (subject_tag.length > 0) {
+            tags.push(subject_tag)
+        }
+        let exp: number = Math.floor(Date.now() / 1000) + 86400
+        tags.push(["expiration", exp.toString()])
         let event: Event = {
             kind: 1,
             created_at: Math.floor(Date.now() / 1000),
