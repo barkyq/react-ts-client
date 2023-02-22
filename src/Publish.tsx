@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import './App.css'
 import {
+    nip19,
     Event,
 } from 'nostr-tools'
 
@@ -28,6 +29,44 @@ export const prepare_content = (content: string, reply_tags: string[][], pk: str
     }
     if (subject_tag.length > 0) {
         tags.push(subject_tag)
+    }
+
+    while (true) {
+        let result = textcontent.match(/note1[a-z0-9]{58}/)
+        if (result !== null) {
+            let d = nip19.decode(result[0])
+            if (d.type === 'note') {
+                let index = tags.length
+                for (let i in tags) {
+                    if (tags[i][0] === "e" && tags[i][1] == d.data) {
+                        index = Number(i)
+                    }
+                }
+                textcontent = textcontent.substring(0, result.index) + "#[" + index + "]" + textcontent.substring(result.index as number + result[0].length,)
+                index === tags.length && tags.push(["e", d.data as string, "", "mention"])
+            }
+        } else {
+            break
+        }
+    }
+
+    while (true) {
+        let result = textcontent.match(/npub1[a-z0-9]{58}/)
+        if (result !== null) {
+            let d = nip19.decode(result[0])
+            if (d.type === 'npub') {
+                let index = tags.length
+                for (let i in tags) {
+                    if (tags[i][0] === "p" && tags[i][1] == d.data) {
+                        index = Number(i)
+                    }
+                }
+                textcontent = textcontent.substring(0, result.index) + "#[" + index + "]" + textcontent.substring(result.index as number + result[0].length,)
+                index === tags.length && tags.push(["p", d.data as string])
+            }
+        } else {
+            break
+        }
     }
 
     while (true) {

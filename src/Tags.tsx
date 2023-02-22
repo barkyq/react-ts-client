@@ -68,6 +68,10 @@ export const Tag: React.FC<{ tag: string[], onClick: React.MouseEventHandler, on
     onContextMenu,
     friendlist
 }) => {
+    let res = tag[1].match(/[a-f0-9]{64}/)
+    if (res === null || res[0].length !== tag[1].length) {
+        return <></>
+    }
     const [tag_name, bech32] = useMemo(() => {
         switch (tag[0]) {
             case "e":

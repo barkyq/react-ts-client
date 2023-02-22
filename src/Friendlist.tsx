@@ -21,7 +21,6 @@ export const FriendBox: React.FC<{ friendlist: Event, set_friendlist: React.Disp
         e.preventDefault()
         set_hidden((hidden) => !hidden)
     }, [])
-
     const pushOnClick = useCallback((tag: string[]) => {
         return (e: React.MouseEvent) => {
             e.preventDefault()
@@ -47,12 +46,11 @@ export const FriendBox: React.FC<{ friendlist: Event, set_friendlist: React.Disp
             }
             tags.current.push([tag[0], tag[1], "" as string, "" as string])
             window.nostr.getPublicKey().then((p) => {
-                window.nostr.signEvent(generateNewEvent(p)).then((e: Event) => {
-                    // console.log(JSON.stringify(e))
-                    localStorage.setItem(p, JSON.stringify(e))
-                    set_friendlist(() => e)
-                    tags.current = [] as string[][]
-                })
+                let e = generateNewEvent(p)
+                // console.log(JSON.stringify(e))
+                localStorage.setItem(p, JSON.stringify(e))
+                set_friendlist(() => e)
+                tags.current = [] as string[][]
             })
         }
     }, [friendlist])
@@ -75,10 +73,8 @@ export const FriendBox: React.FC<{ friendlist: Event, set_friendlist: React.Disp
                 content: content,
                 pubkey: p,
             }
-            window.nostr.signEvent(event).then((e: Event) => {
-                localStorage.setItem(p, JSON.stringify(e))
-                set_friendlist(() => e)
-            })
+            localStorage.setItem(p, JSON.stringify(event))
+            set_friendlist(() => event)
         })
     }, [friendlist])
     const generateNewEvent = useCallback((p: string) => {
@@ -126,15 +122,14 @@ export const FriendBox: React.FC<{ friendlist: Event, set_friendlist: React.Disp
     let save = useCallback((e: React.MouseEvent) => {
         e.preventDefault();
         window.nostr.getPublicKey().then((p) => {
-            window.nostr.signEvent(generateNewEvent(p)).then((ev: Event) => {
-                if (ev !== undefined) {
-                    localStorage.setItem(p, JSON.stringify(ev))
-                    set_friendlist(() => ev)
-                    tags.current = [] as string[][]
-                } else {
-                    console.log("error")
-                }
-            })
+            let ev = generateNewEvent(p)
+            if (ev !== undefined) {
+                localStorage.setItem(p, JSON.stringify(ev))
+                set_friendlist(() => ev)
+                tags.current = [] as string[][]
+            } else {
+                console.log("error")
+            }
         })
     }, [friendlist])
     let fetchOnClick = useCallback((e: React.MouseEvent) => {
@@ -171,8 +166,8 @@ export const FriendBox: React.FC<{ friendlist: Event, set_friendlist: React.Disp
             {!hidden && <div className="friendlist">
                 {
                     friendlist.tags.map(
-                        (tag, i) => <div
-                            className="frienditem" key={i}>
+                        (tag, _) => <div
+                            className="frienditem" key={tag[1]}>
                             <a href={"https://www.nostr.guru/" + nip19.npubEncode(tag[1])}
                                 draggable={true}
                                 onDragStart={(e) => { e.dataTransfer.setData("pub", tag[1]); set_deletebox(() => true) }}
