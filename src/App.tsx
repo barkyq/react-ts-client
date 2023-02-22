@@ -297,7 +297,7 @@ function App() {
 
     return (
         <div className="App">
-            <div className={"titlebar"}><span>gnost-ts-client</span></div>
+            <div className={"titlebar"}><span>react-ts-client</span></div>
             <div className="loginBox">
                 {pk === "" && <a onClick={pubkeyConnect}>{"Connect to browser extension"}</a>}
                 {pk !== "" && <>
