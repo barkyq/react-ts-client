@@ -160,7 +160,7 @@ export const FriendBox: React.FC<{ friendlist: Event, set_friendlist: React.Disp
         friendlist.created_at !== undefined ? <>
             <div className="topsig">
                 <a className="hide" onClick={hide}>Friendlist</a>
-                {!hidden && <><a onClick={() => {}}>push</a><a onClick={fetchOnClick}>fetch</a><a onClick={save}> save</a></>}
+                {!hidden && <><a onClick={fetchOnClick}>fetch</a><a onClick={save}> save</a></>}
                 <span className="gray">Last Updated: {(new Date((friendlist.created_at as number) * 1000)).toLocaleTimeString('en-US', { "hourCycle": "h23", "weekday": "short", "month": "short", "day": "2-digit" })}</span>
             </div>
             {!hidden && <div className="friendlist">
