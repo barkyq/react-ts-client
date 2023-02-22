@@ -7,7 +7,7 @@ import {
 
 import { Tag, generate_reply_tags } from './Tags'
 // need to useMemo to cache the output of various renderings
-export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags: React.Dispatch<React.SetStateAction<string[][]>>, set_disps: React.Dispatch<React.SetStateAction<Event[]>>, relay_url: string, pk: string, friendlist: Event, fetcher: (tags: string[][]) => void }> = ({
+export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags: React.Dispatch<React.SetStateAction<string[][]>>, set_disps: React.Dispatch<React.SetStateAction<Event[]>>, relay_url: string, pk: string, friendlist: Event, fetcher: (tags: string[][]) => void, publish: (e: Event) => void }> = ({
     ev,
     reply_tags,
     set_reply_tags,
@@ -15,7 +15,9 @@ export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags:
     relay_url,
     pk,
     friendlist,
-    fetcher }) => {
+    fetcher,
+    publish
+}) => {
     const author_name = useMemo(() => {
         for (let j in friendlist.tags) {
             if (friendlist.tags[j][0] == "p" && friendlist.tags[j][3] !== undefined && friendlist.tags[j][3] !== "" && friendlist.tags[j][1] == ev.pubkey) {
@@ -48,6 +50,17 @@ export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags:
     }, [ev, pk, relay_url])
     const hideOnClick = useCallback((e: React.MouseEvent) => {
         e.preventDefault()
+        ev.pubkey === pk &&
+            window.nostr.getPublicKey().then((p) => {
+                let event: Event = {
+                    kind: 5,
+                    created_at: Math.floor(Date.now() / 1000),
+                    tags: [["e", ev.id as string]],
+                    content: "",
+                    pubkey: p,
+                }
+                window.nostr.signEvent(event).then(publish)
+            })
         set_disps((curr: Event[]) => {
             let copy: Event[] = []
             for (let i in curr) {
@@ -171,7 +184,7 @@ export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags:
             <span className="timestamp">{timeString}</span>
             <a className="noteId" href={"nostr:" + note} onClick={pushOnClick(["e", ev.id as string, relay_url, "mention"])} onContextMenu={(e) => { e.preventDefault(); set_reply_tags(() => [["e", ev.id as string, relay_url, "mention"]]) }}> {note.substring(0, 12)}</ a >
             <a className="reply" onClick={replyTagsOnClick}>reply</a>
-            <a className="hide" onClick={hideOnClick}>hide</a>
+            <a className="hide" onClick={hideOnClick}>{ev.pubkey === pk ? "delete" : "hide"}</a>
         </div >
         return <>
             {topsig}

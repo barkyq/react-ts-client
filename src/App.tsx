@@ -140,7 +140,6 @@ function App() {
         }
         r.current.connect().then(after_connect_relay).catch(() => {});
     }, [url, pk]);
-
     const publish_raw = useCallback((cb: () => void) => {
         return (e: Event) => {
             if (r.current.status == WebSocket.OPEN) {
@@ -151,8 +150,10 @@ function App() {
                             return cb()
                         }
                     }
-                    ids_exist_ref.current.push(e.id as string)
-                    set_disps((disps) => [e, ...disps]);
+                    if (e.kind === 1) {
+                        ids_exist_ref.current.push(e.id as string);
+                        set_disps((disps) => [e, ...disps]);
+                    }
                     cb()
                 })
                 p.on('failed', () => {})
@@ -315,7 +316,7 @@ function App() {
                 {(eose) &&
                     <>
                         {disps.map(
-                            (e: Event) => <Post key={e.id} ev={e} reply_tags={reply_tags} set_reply_tags={set_reply_tags} set_disps={set_disps} relay_url={url} pk={pk} friendlist={friendlist} fetcher={fetch_e_tags} />)
+                            (e: Event) => <Post key={e.id} ev={e} reply_tags={reply_tags} set_reply_tags={set_reply_tags} set_disps={set_disps} relay_url={url} pk={pk} friendlist={friendlist} fetcher={fetch_e_tags} publish={publish_raw(() => {})} />)
                         }
                     </>
                 }
