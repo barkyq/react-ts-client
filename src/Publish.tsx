@@ -91,11 +91,12 @@ export const prepare_content = (content: string, reply_tags: string[][], pk: str
     return event
 }
 
-export const MainTextArea: React.FC<{ friendlist: Event, publish: (content: string, reply_tags: string[][], cb: () => void) => void, reply_tags: string[][], set_reply_tags: React.Dispatch<React.SetStateAction<string[][]>> }> = ({
+export const MainTextArea: React.FC<{ friendlist: Event, reply_tags: string[][], set_reply_tags: React.Dispatch<React.SetStateAction<string[][]>>, publish: (content: string, reply_tags: string[][], cb: () => void) => void, stash: (content: string, reply_tags: string[][], cb: () => void) => void }> = ({
     friendlist,
     reply_tags,
     set_reply_tags,
     publish,
+    stash,
 }) => {
     const [content, set_content] = useState('' as string)
     const [hidden, set_hidden] = useState(true)
@@ -103,7 +104,12 @@ export const MainTextArea: React.FC<{ friendlist: Event, publish: (content: stri
         <div className="maintextarea">
             <div>
                 {!hidden ? <textarea className="maintextarea" spellCheck="false" value={content} onChange={(e) => set_content(() => e.target.value)}></textarea> : <></>}
-                {!hidden ? <div id="publish_button" onClick={() => { publish(content, reply_tags, () => set_content(() => "" as string)); }}>publish</div> : <></>}
+                {!hidden ? <div id="stash_button" onClick={() => { stash(content, reply_tags, () => set_content(() => "" as string)); }}>stash</div> : <></>}
+                {!hidden ? <div id="publish_button" onClick={() => {
+                    publish(content, reply_tags, () => {
+                        set_content(() => "" as string);
+                    })
+                }}>publish</div> : <></>}
                 {<div id="hide_button" onClick={() => set_hidden((hidden) => !hidden)}>{hidden ? "expand" : "hide"}</div>}
             </div>
             {!hidden ? <div>

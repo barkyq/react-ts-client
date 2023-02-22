@@ -35,6 +35,7 @@ const sort_Events = (evs: Event[]) => {
 function App() {
     const eose = useRef(false)
     const ids_exist_ref = useRef([] as string[])
+    const [seen_conn, set_seen_conn] = useState([] as string[])
     const [reply_tags, set_reply_tags] = useState<string[][]>([])
 
     const [disps, set_disps] = useState<Event[]>([])
@@ -93,6 +94,14 @@ function App() {
             })
             sub.on('event', (e: Event) => {
                 let b: boolean = false
+                set_seen_conn((sc) => {
+                    for (let j in sc) {
+                        if (sc[j] === e.id) {
+                            return sc
+                        }
+                    }
+                    return [...sc, e.id as string]
+                })
                 for (let i in ids_exist_ref.current) {
                     if (ids_exist_ref.current[i] === e.id) {
                         b = true
@@ -130,7 +139,6 @@ function App() {
         const disconnect_cb = () => {
             console.log("disconnected")
             set_connected(() => false)
-
         }
         const after_connect_relay = () => {
             r.current.on('connect', connect_cb)
@@ -144,18 +152,7 @@ function App() {
         return (e: Event) => {
             if (r.current.status == WebSocket.OPEN) {
                 let p = r.current.publish(e)
-                p.on('ok', () => {
-                    for (let j in ids_exist_ref.current) {
-                        if (ids_exist_ref.current[j] === e.id) {
-                            return cb()
-                        }
-                    }
-                    if (e.kind === 1) {
-                        ids_exist_ref.current.push(e.id as string);
-                        set_disps((disps) => [e, ...disps]);
-                    }
-                    cb()
-                })
+                p.on('ok', cb)
                 p.on('failed', () => {})
             }
         }
@@ -180,15 +177,37 @@ function App() {
                     set_friendlist(() => sort_Events(returned_events)[0])
                 }
             })
-        } else {
-            console.log("ping")
         }
     }, [])
 
     const publish = useCallback((content: string, reply_tags: string[][], cb: () => void) => {
         let event = prepare_content(content, reply_tags, pk)
         localStorage.setItem(pk + "time", Math.floor(Date.now() / 1000).toString())
-        window.nostr.signEvent(event).then(publish_raw(cb)).catch(console.log)
+        window.nostr.signEvent(event).then((e) => publish_raw(() => {
+            set_seen_conn((sc) => {
+                for (let j in sc) {
+                    if (sc[j] === e.id) {
+                        return sc
+                    }
+                }
+                return [...sc, e.id as string]
+            });
+            cb();
+        })(e)).catch(console.log)
+    }, [])
+
+    const stash = useCallback((content: string, reply_tags: string[][], cb: () => void) => {
+        let event = prepare_content(content, reply_tags, pk)
+        window.nostr.signEvent(event).then((e) => {
+            for (let j in ids_exist_ref.current) {
+                if (ids_exist_ref.current[j] === e.id) {
+                    return
+                }
+            }
+            ids_exist_ref.current.push(e.id as string);
+            set_disps((disps) => [e, ...disps]);
+            cb();
+        }).catch(console.log)
     }, [])
 
     const fetch_e_tags = useCallback((reply_tags: string[][]) => {
@@ -233,6 +252,14 @@ function App() {
                 }
             })
             sub.on('event', (e: Event) => {
+                set_seen_conn((sc) => {
+                    for (let j in sc) {
+                        if (sc[j] === e.id) {
+                            return sc
+                        }
+                    }
+                    return [...sc, e.id as string]
+                })
                 for (let j in ids_exist_ref.current) {
                     if (e.id === ids_exist_ref.current[j]) {
                         return
@@ -283,6 +310,14 @@ function App() {
                 }
             })
             sub.on('event', (e: Event) => {
+                set_seen_conn((sc) => {
+                    for (let j in sc) {
+                        if (sc[j] === e.id) {
+                            return sc
+                        }
+                    }
+                    return [...sc, e.id as string]
+                })
                 for (let j in ids_exist_ref.current) {
                     if (e.id === ids_exist_ref.current[j]) {
                         return
@@ -302,21 +337,37 @@ function App() {
             <div className="loginBox">
                 {pk === "" && <a onClick={pubkeyConnect}>{"Connect to browser extension"}</a>}
                 {pk !== "" && <>
-                    <div>{connected ? <span className="hide" onClick={() => { r.current.close() }}>Connected to: {url}</span> : <form onSubmit={(e) => { e.preventDefault(); relayConnect() }}><button className="connect_button" type="submit">{"Connect to:"}</button><input value={url} autoFocus={false} onChange={(e) => set_url(() => e.target.value)}></input></form>} </div>
+                    <div>{connected ? <span className="hide" onClick={() => { r.current.close() }}>Connected to: {url}</span> : <form onSubmit={(e) => { e.preventDefault(); relayConnect() }}><button className="connect_button" type="submit">{"Connect to:"}</button><input value={url} autoFocus={false} onChange={(e) => set_url(() => { set_seen_conn(() => [] as string[]); return e.target.value })}></input></form>} </div>
                     <div><span className="gray">Logged in as:</span> <Tag tag={["p", pk]} friendlist={friendlist} onClick={(e) => e.preventDefault()} onContextMenu={(e) => e.preventDefault()} /></div>
                 </>}
             </div>
             {connected && <>
                 <FriendBox friendlist={friendlist} set_friendlist={set_friendlist} publish={publish_raw(() => {})} fetch_friendlist={fetch_friendlist} reply_tags={reply_tags} set_reply_tags={set_reply_tags} />
                 <SubBox friendlist={friendlist} fetcher={fetch_p_tags} subs={subs} set_reply_tags={set_reply_tags} reply_tags={reply_tags} />
-                <MainTextArea friendlist={friendlist} publish={publish} reply_tags={reply_tags} set_reply_tags={set_reply_tags} />
+                <MainTextArea friendlist={friendlist} publish={publish} stash={stash} reply_tags={reply_tags} set_reply_tags={set_reply_tags} />
             </>
             }
             <div id="notelist">
                 {(eose) &&
                     <>
                         {disps.map(
-                            (e: Event) => <Post key={e.id} ev={e} reply_tags={reply_tags} set_reply_tags={set_reply_tags} set_disps={set_disps} relay_url={url} pk={pk} friendlist={friendlist} fetcher={fetch_e_tags} publish={publish_raw(() => {})} />)
+                            (e: Event) => <Post key={e.id} ev={e} reply_tags={reply_tags} set_reply_tags={set_reply_tags} set_disps={set_disps} relay_url={url} pk={pk} friendlist={friendlist} fetcher={fetch_e_tags} publish={publish_raw(() => {
+                                set_seen_conn((sc) => {
+                                    for (let j in sc) {
+                                        if (sc[j] === e.id) {
+                                            return sc
+                                        }
+                                    }
+                                    return [...sc, e.id as string]
+                                })
+                                for (let j in ids_exist_ref.current) {
+                                    if (ids_exist_ref.current[j] === e.id) {
+                                        return
+                                    }
+                                }
+                                ids_exist_ref.current.push(e.id as string);
+                                set_disps((disps) => [e, ...disps]);
+                            })} seen_conn={seen_conn} />)
                         }
                     </>
                 }

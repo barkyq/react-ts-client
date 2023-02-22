@@ -7,7 +7,7 @@ import {
 
 import { Tag, generate_reply_tags } from './Tags'
 // need to useMemo to cache the output of various renderings
-export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags: React.Dispatch<React.SetStateAction<string[][]>>, set_disps: React.Dispatch<React.SetStateAction<Event[]>>, relay_url: string, pk: string, friendlist: Event, fetcher: (tags: string[][]) => void, publish: (e: Event) => void }> = ({
+export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags: React.Dispatch<React.SetStateAction<string[][]>>, set_disps: React.Dispatch<React.SetStateAction<Event[]>>, relay_url: string, pk: string, friendlist: Event, fetcher: (tags: string[][]) => void, publish: (e: Event) => void, seen_conn: string[] }> = ({
     ev,
     reply_tags,
     set_reply_tags,
@@ -16,7 +16,8 @@ export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags:
     pk,
     friendlist,
     fetcher,
-    publish
+    publish,
+    seen_conn
 }) => {
     const author_name = useMemo(() => {
         for (let j in friendlist.tags) {
@@ -69,6 +70,10 @@ export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags:
             return copy
         })
     }, [ev])
+    const publishOnClick = useCallback((e: React.MouseEvent) => {
+        e.preventDefault()
+        publish(ev)
+    }, [ev])
     const tail = useMemo(() => {
         let elements: JSX.Element[] = []
         for (let j in ev.tags) {
@@ -108,7 +113,6 @@ export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags:
     const bodyJSX = useMemo(() => {
         let content = ev.content.replaceAll(/lnbc[0-9,a-z]*/ig, "*lightning-invoice*")
         let pieces: JSX.Element[] = []
-        let note = nip19.noteEncode(ev.id as string)
         for (let j in ev.tags) {
             if (ev.tags[j][0] === "subject") {
                 pieces.push(<span key="subject" className="subject">Subject: {ev.tags[j][1]}</span>)
@@ -176,23 +180,35 @@ export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags:
                 break
             }
         }
-        var dateObj = new Date(ev.created_at * 1000);
-        var timeString = dateObj.toLocaleTimeString('en-US', { "hourCycle": "h23", "weekday": "short", "month": "short", "day": "2-digit" });
-        let npub = nip19.npubEncode(ev.pubkey)
-        let topsig = <div className="topsig">
-            <a className="author" href={"nostr:" + npub} onClick={pushOnClick(["p", ev.pubkey])} onContextMenu={(e) => { e.preventDefault(); set_reply_tags(() => [["p", ev.pubkey]]) }}> {author_name.padEnd(12, " ").substring(0, 12)}</ a >
-            <span className="timestamp">{timeString}</span>
-            <a className="noteId" href={"nostr:" + note} onClick={pushOnClick(["e", ev.id as string, relay_url, "mention"])} onContextMenu={(e) => { e.preventDefault(); set_reply_tags(() => [["e", ev.id as string, relay_url, "mention"]]) }}> {note.substring(0, 12)}</ a >
-            <a className="reply" onClick={replyTagsOnClick}>reply</a>
-            <a className="hide" onClick={hideOnClick}>{ev.pubkey === pk ? "delete" : "hide"}</a>
-        </div >
         return <>
-            {topsig}
             <div className="textcontent">
                 {pieces.map((p) => p)}
             </div>
         </>
     }, [ev, relay_url, pk, author_name, friendlist])
+
+    let seen = useMemo(() => {
+        for (let j in seen_conn) {
+            if (seen_conn[j] === ev.id) {
+                return true
+            }
+        }
+        return false
+    }, [seen_conn])
+    let topSig = useMemo(() => {
+        var dateObj = new Date(ev.created_at * 1000);
+        var timeString = dateObj.toLocaleTimeString('en-US', { "hourCycle": "h23", "weekday": "short", "month": "short", "day": "2-digit" });
+        let npub = nip19.npubEncode(ev.pubkey)
+        let note = nip19.noteEncode(ev.id as string)
+        return <div className="topsig">
+            <a className="author" href={"nostr:" + npub} onClick={pushOnClick(["p", ev.pubkey])} onContextMenu={(e) => { e.preventDefault(); set_reply_tags(() => [["p", ev.pubkey]]) }}> {author_name.padEnd(12, " ").substring(0, 12)}</ a >
+            <span className="timestamp">{timeString}</span>
+            <a className="noteId" href={"nostr:" + note} onClick={pushOnClick(["e", ev.id as string, "", "mention"])} onContextMenu={(e) => { e.preventDefault(); set_reply_tags(() => [["e", ev.id as string, "", "mention"]]) }}> {note.substring(0, 12)}</ a >
+            {seen ? <span className="timestamp">S</span> : <a className="reply" onClick={publishOnClick}>P</a>}
+            <a className="reply" onClick={replyTagsOnClick}>reply</a>
+            <a className="hide" onClick={hideOnClick}>{ev.pubkey === pk ? "del" : "hide"}</a>
+        </div >
+    }, [ev, author_name, friendlist, seen])
 
     //filtering
     let in_e_tags: boolean = false
@@ -243,7 +259,7 @@ export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags:
         in_e_tags || refs_e_tags ||
         (refs_p_tags || in_p_tags) && !exist_e_tags
     ) ? (<div className={"post" + ((ev.pubkey === pk) ? " me" : " other")}>
-        <>{bodyJSX}{tail}</>
+        <>{topSig}{bodyJSX}{tail}</>
     </ div>
     )
         : <></>;

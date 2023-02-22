@@ -79,6 +79,7 @@
     font-size: 2.2em;
 }
 .topsig a, .reply, .timestamp, .hide, .gray, .friendbox .consideration a {
+    user-select: none;
     color: #888888;
 }
 .magictimestamp {
@@ -120,27 +121,26 @@
     min-height: 60px;
     position:relative;
 }
-.maintextarea #publish_button {
+.maintextarea #publish_button, .maintextarea #stash_button, .maintextarea #hide_button {
     user-select: none;
     position: absolute;
     padding: 2px 10px;
+    background: #343434;
+}
+.maintextarea #publish_button {
     bottom: 15px;
     right: 10px;
-    background: #343434;
+}
+.maintextarea #stash_button {
+    bottom: 65px;
+    right: 10px;
 }
 .maintextarea #hide_button {
-    user-select: none;
-    position: absolute;
-    padding: 2px 10px;
     top: 15px;
     right: 10px;
-    background: #343434;
+
 }
-.maintextarea #hide_button:hover {
-    background: #646434;
-    cursor:pointer;
-}
-.maintextarea #publish_button:hover {
+.maintextarea #hide_button:hover, .maintextarea #publish_button:hover, .maintextarea #stash_button:hover {
     background: #646434;
     cursor:pointer;
 }
