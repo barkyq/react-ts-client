@@ -85,6 +85,9 @@
     user-select: none;
     color: #888888;
 }
+.ttag {
+    color: #ff5555;
+}
 .magictimestamp:hover {
     color: #88ff88;
     cursor: pointer;
@@ -204,7 +207,7 @@
 }
 
 .friendbox .consideration a:hover{
-    color: #9c9cff;;
+    color: #9c9cff;
 }
 .frienditem > a {
     display:block;
