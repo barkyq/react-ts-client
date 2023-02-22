@@ -29,10 +29,15 @@ export const prepare_content = (content: string, reply_tags: string[][], pk: str
     if (subject_tag.length > 0) {
         tags.push(subject_tag)
     }
-    let result = textcontent.match(/#[a-z]+/)
-    if (result !== null) {
-        textcontent = textcontent.substring(0, result.index) + "#[" + tags.length + "]"
-        tags.push(["t", result[0].substring(1,)])
+
+    while (true) {
+        let result = textcontent.match(/#[a-zA-Z0-9]+/)
+        if (result !== null) {
+            textcontent = textcontent.substring(0, result.index) + "#[" + tags.length + "]" + textcontent.substring(result.index as number + result[0].length,)
+            tags.push(["t", result[0].substring(1,)])
+        } else {
+            break
+        }
     }
 
     let exp: number = Math.floor(Date.now() / 1000) + 86400

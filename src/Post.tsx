@@ -90,7 +90,7 @@ export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags:
                 }
             }
         }
-        return (<div className="tags"> {elements.map((t) => t)}</div>)
+        return (elements.length > 0 ? <div className="tags"> {elements.map((t) => t)}</div> : <></>)
     }, [])
     const bodyJSX = useMemo(() => {
         let content = ev.content.replaceAll(/lnbc[0-9,a-z]*/ig, "*lightning-invoice*")
@@ -155,7 +155,7 @@ export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags:
                         break
                     case "t":
                         let txt = ev.tags[j][1]
-                        pieces.push(<span className="ttag" key={5 * i + 1} > #{txt}</ span>)
+                        pieces.push(<span className="ttag" key={5 * i + 1} >{txt}</ span>)
                 }
             }
             content = content.substring(ind + len)
