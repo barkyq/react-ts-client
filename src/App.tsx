@@ -13,6 +13,7 @@ import { Tag, Tags } from './Tags'
 import { FriendBox } from './Friendlist'
 import { Post } from './Post'
 import { MainTextArea, prepare_content } from './Publish'
+import { RelayHintBox } from './RelayHints'
 
 declare global {
     interface Window {
@@ -26,7 +27,7 @@ interface Nostr {
     getRelays: () => Promise<{ [url: string]: { read: boolean, write: boolean } }>,
 }
 
-const sort_Events = (evs: Event[]) => {
+export const sort_Events = (evs: Event[]) => {
     let evs_copy = [...evs]
     evs_copy.sort((a: Event, b: Event) => b.created_at - a.created_at)
     return evs_copy
@@ -231,6 +232,7 @@ function App() {
             }
         }
         const filters: Filter[] = []
+
         if (e_tags_unseen.length > 0) {
             filters.push({
                 ids: e_tags_unseen,
@@ -344,6 +346,7 @@ function App() {
             {connected && <>
                 <FriendBox friendlist={friendlist} set_friendlist={set_friendlist} publish={publish_raw(() => {})} fetch_friendlist={fetch_friendlist} reply_tags={reply_tags} set_reply_tags={set_reply_tags} />
                 <SubBox friendlist={friendlist} fetcher={fetch_p_tags} subs={subs} set_reply_tags={set_reply_tags} reply_tags={reply_tags} />
+                <RelayHintBox reply_tags={reply_tags} friendlist={friendlist} ids_exist_ref={ids_exist_ref} disps={disps} set_disps={set_disps} url={url} />
                 <MainTextArea friendlist={friendlist} publish={publish} stash={stash} reply_tags={reply_tags} set_reply_tags={set_reply_tags} />
             </>
             }
@@ -351,7 +354,7 @@ function App() {
                 {(eose) &&
                     <>
                         {disps.map(
-                            (e: Event) => <Post key={e.id} ev={e} reply_tags={reply_tags} set_reply_tags={set_reply_tags} set_disps={set_disps} relay_url={url} pk={pk} friendlist={friendlist} fetcher={fetch_e_tags} publish={publish_raw(() => {
+                            (e: Event) => <Post key={e.id} ev={e} reply_tags={reply_tags} set_reply_tags={set_reply_tags} set_disps={set_disps} pk={pk} friendlist={friendlist} fetcher={fetch_e_tags} publish={publish_raw(() => {
                                 set_seen_conn((sc) => {
                                     for (let j in sc) {
                                         if (sc[j] === e.id) {

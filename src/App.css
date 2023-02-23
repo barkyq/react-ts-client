@@ -37,13 +37,21 @@
     border: 1px solid #888888;
     margin: 15px auto 15px auto;
 }
-.post, .sub, .friendbox {   
+.post, .sub, .friendbox, .relayhints {
     padding: 10px;
     border: 1px solid #888888;
     margin: 0px 0px 15px 0px;
 }
-.sub, .friendbox, .loginBox {
+.sub, .friendbox, .loginBox, .relayhints {
     background-color: #141414;
+}
+.relayhints > div {
+    display:flex;
+    flex-direction: column;
+}
+.relayhints > div > div {
+    display:flex;
+    justify-content: space-between;
 }
 .sub > div {
     display:flex;
@@ -86,8 +94,11 @@
     user-select: none;
     color: #888888;
 }
-.ttag {
-    color: #ff44aa;
+a.not_found, .ttag {
+    color: #ff5555;
+}
+a.not_found:hover {
+    color: #aa3333;
 }
 .magictimestamp:hover {
     color: #88ff88;

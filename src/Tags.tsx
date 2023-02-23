@@ -6,7 +6,7 @@ import {
 
 } from 'nostr-tools'
 
-export const generate_reply_tags = (e: Event, pk: string, url: string) => {
+export const generate_reply_tags = (e: Event, pk: string) => {
     let reply_tags: string[][] = []
     if (e.pubkey !== pk) {
         reply_tags.push(["p", e.pubkey])
@@ -47,16 +47,16 @@ export const generate_reply_tags = (e: Event, pk: string, url: string) => {
                 if ((e.tags[i][2] !== null) && (e.tags[i][2] !== undefined)) {
                     reply_tags.push([e.tags[i][0], e.tags[i][1], e.tags[i][2], "root"])
                 } else {
-                    reply_tags.push([e.tags[i][0], e.tags[i][1], url, "root"])
+                    reply_tags.push([e.tags[i][0], e.tags[i][1], "", "root"])
                 }
                 break
             }
         }
     }
     if (has_root) {
-        reply_tags.push(["e", (e.id as string), url, "reply"])
+        reply_tags.push(["e", (e.id as string), "", "reply"])
     } else {
-        reply_tags.push(["e", (e.id as string), url, "root"])
+        reply_tags.push(["e", (e.id as string), "", "root"])
     }
     return reply_tags
 }

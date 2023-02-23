@@ -7,12 +7,11 @@ import {
 
 import { Tag, generate_reply_tags } from './Tags'
 // need to useMemo to cache the output of various renderings
-export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags: React.Dispatch<React.SetStateAction<string[][]>>, set_disps: React.Dispatch<React.SetStateAction<Event[]>>, relay_url: string, pk: string, friendlist: Event, fetcher: (tags: string[][]) => void, publish: (e: Event) => void, seen_conn: string[] }> = ({
+export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags: React.Dispatch<React.SetStateAction<string[][]>>, set_disps: React.Dispatch<React.SetStateAction<Event[]>>, pk: string, friendlist: Event, fetcher: (tags: string[][]) => void, publish: (e: Event) => void, seen_conn: string[] }> = ({
     ev,
     reply_tags,
     set_reply_tags,
     set_disps,
-    relay_url,
     pk,
     friendlist,
     fetcher,
@@ -46,9 +45,9 @@ export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags:
     const replyTagsOnClick = useCallback((e: React.MouseEvent) => {
         fetcher(ev.tags)
         e.preventDefault()
-        let reply_tags = generate_reply_tags(ev, pk, relay_url)
+        let reply_tags = generate_reply_tags(ev, pk)
         set_reply_tags(() => reply_tags)
-    }, [ev, pk, relay_url])
+    }, [ev, pk])
     const hideOnClick = useCallback((e: React.MouseEvent) => {
         e.preventDefault()
         ev.pubkey === pk &&
@@ -82,7 +81,7 @@ export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags:
                 var relay_string: string
                 switch (ev.tags[j][2]) {
                     case undefined:
-                        relay_string = relay_url
+                        relay_string = ""
                         break
                     default:
                         relay_string = ev.tags[j][2]
@@ -185,7 +184,7 @@ export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags:
                 {pieces.map((p) => p)}
             </div>
         </>
-    }, [ev, relay_url, pk, author_name, friendlist])
+    }, [ev, pk, author_name, friendlist])
 
     let seen = useMemo(() => {
         for (let j in seen_conn) {
