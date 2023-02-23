@@ -28,6 +28,7 @@ export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags:
     }, [ev, friendlist])
     const pushOnClick = useCallback((tag: string[]) => {
         return (e: React.MouseEvent) => {
+            console.log(ev.content)
             fetcher(ev.tags)
             e.preventDefault()
             set_reply_tags((reply_tags) => {
@@ -120,61 +121,48 @@ export const Post: React.FC<{ ev: Event, reply_tags: string[][], set_reply_tags:
         }
         let regexp = /#\[[0-9]+?\]/
         for (let i = 0; i < 110; i++) {
-            let ind = content.search(regexp)
+            let ind = content.match(regexp)
             var content_piece: string
-            if (ind === -1) {
+            if (ind === null) {
                 content_piece = content
             } else {
-                content_piece = content.substring(0, ind)
+                content_piece = content.substring(0, ind.index)
             }
-            if (content_piece !== "") {
-                let https_ind = content_piece.search(/https:\/\//g)
-                if (https_ind === -1) {
-                    pieces.push(<React.Fragment key={5 * i}>{content_piece}</React.Fragment>)
+            while (content_piece !== "") {
+                let https_match = content_piece.match(/https:\/\/[a-zA-Z0-9_\/\-.]*/)
+                if (https_match === null) {
+                    pieces.push(<React.Fragment key={pieces.length}>{content_piece}</React.Fragment>)
+                    break
                 } else {
-                    let pre = content_piece.substring(0, https_ind)
-                    let mid = content_piece.substring(https_ind,)
-                    var url: string
-                    var end: string
-                    let end_index = mid.search("[\\n, ]")
-                    if (end_index === -1) {
-                        url = mid
-                        end = ""
-                    } else {
-                        url = mid.substring(0, end_index)
-                        end = mid.substring(end_index,)
-                    }
+                    let pre = content_piece.substring(0, https_match.index)
+                    let end_index = https_match.index as number + https_match[0].length
                     if (pre !== "") {
-                        pieces.push(<React.Fragment key={5 * i + 2}>{pre}</React.Fragment>)
+                        pieces.push(<React.Fragment key={pieces.length}>{pre}</React.Fragment>)
                     }
-                    if (url !== "") {
-                        pieces.push(<a href={url} target="_blank" key={5 * i + 3}>URL</a>)
-                    }
-                    if (end !== "") {
-                        content = end
-                        continue
-                    }
+                    pieces.push(<a href={https_match[0]} target="_blank" key={pieces.length}>URL</a>)
+                    content_piece = content_piece.substring(end_index,)
                 }
             }
-            if (ind === -1) {
+            if (ind === null || ind.index === undefined) {
                 break
             }
-            let len = content.substring(ind,).search("\\]") + 1
-            let j = Number(content.substring(ind + 2, ind + len - 1))
+            let len = ind[0].length
+            content = content.substring(ind.index + len,)
+            let j = Number(ind[0].substring(2, len - 1))
             if (!isNaN(j) && (ev.tags[j] !== undefined)) {
                 switch (ev.tags[j][0]) {
                     case "p":
-                        pieces.push(<Tag key={5 * i + 1} onContextMenu={() => {}} friendlist={friendlist} onClick={pushOnClick(ev.tags[j])} tag={ev.tags[j]} />)
+                        pieces.push(<Tag key={pieces.length} onContextMenu={() => {}} friendlist={friendlist} onClick={pushOnClick(ev.tags[j])} tag={ev.tags[j]} />)
                         break
                     case "e":
-                        pieces.push(<Tag key={5 * i + 1} onContextMenu={() => {}} friendlist={friendlist} onClick={pushOnClick(ev.tags[j])} tag={ev.tags[j]} />)
+                        pieces.push(<Tag key={pieces.length} onContextMenu={() => {}} friendlist={friendlist} onClick={pushOnClick(ev.tags[j])} tag={ev.tags[j]} />)
                         break
                     case "t":
                         let txt = ev.tags[j][1]
-                        pieces.push(<span className="ttag" key={5 * i + 1} >{txt}</ span>)
+                        pieces.push(<span className="ttag" key={pieces.length} >{txt}</ span>)
+                        break
                 }
             }
-            content = content.substring(ind + len)
             if (content === "") {
                 break
             }
